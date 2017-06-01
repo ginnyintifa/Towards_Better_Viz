@@ -1,0 +1,508 @@
+---
+title: "Learn_ggplot2"
+author: "GINNY"
+date: "25 May 2017"
+output: html_document
+---
+
+
+```{r}
+
+  setwd("/Users/ginny/Downloads/Rgraphics")
+  
+  housing = read.csv("dataSets/landdata-states.csv")
+  
+  head(housing [1:5])
+  
+  
+#####################################simple plots  
+  hist(housing$Home.Value)
+  
+  ###using ggplot2
+  
+  
+  library(ggplot2)
+  
+  ggplot(housing, aes(x=Home.Value))+
+    geom_histogram()
+  
+  
+######################################complex plots
+  
+  
+  plot(Home.Value ~ Date,
+       data=subset(housing, State == "MA"))
+  points(Home.Value ~ Date, col="red",
+         data=subset(housing, State == "TX"))
+  legend(1975, 400000,
+         c("MA", "TX"), title="State",
+         col=c("black", "red"),
+         pch=c(1, 1))
+  
+  ###using ggplot2
+  
+  
+  ggplot(subset(housing, State %in% c("MA","TX")),
+         aes(x=Date, y=Home.Value, color=State))+
+    geom_point()
+  
+```
+
+#Getting to know the basics
+```{R}
+## aesthetic mapping
+## geometic objects
+  
+help.search("geom_",package="ggplot2")  
+  
+```
+
+## Points
+
+```{R}
+hp2001Q1=subset(housing, Date==2001.25)
+  
+ggplot(hp2001Q1,
+       aes(y=Structure.Cost, x=Land.Value))+
+  geom_point()
+  
+ggplot(hp2001Q1,
+       aes(y = Structure.Cost, x = log(Land.Value))) +
+  geom_point()
+
+```
+## Lines
+```{R}
+hp2001Q1$pred.SC =predict(lm(Structure.Cost ~ log(Land.Value), data=hp2001Q1))
+
+p1= ggplot(hp2001Q1, aes(x=log(Land.Value), y=Structure.Cost))
+
+p1+geom_point(aes(color=Home.Value))+geom_line(aes(y=pred.SC))
+
+####the attributes in aes() should be subset of the dataframe's attributes
+
+```
+
+
+## Smoothers
+
+```{R}
+p1+geom_point(aes(color=Home.Value))+
+  geom_smooth()
+
+
+```
+
+
+##Text
+
+```{R}
+p1+geom_text(aes(label=State),size=3)
+
+library(ggrepel)
+
+p1+
+  geom_point()+
+  geom_text_repel(aes(label=State),size=3)
+
+
+```
+
+## Aesthetic mapping and assignment
+
+Variables are mapped to aesthetics with the aes() function, while fixed aesthetics are set outside the aes() call.
+
+```{R}
+
+p1+
+  geom_point(aes(size=2),
+    color="red")
+```
+
+
+
+##Mapping Variables To other Aesthetics
+
+
+```{R}
+p1+
+  geom_point(aes(color=Home.Value, shape=region))
+```
+
+
+## Exercise 1
+
+```{R}
+
+  setwd("/Users/ginny/Downloads/Rgraphics")
+
+dat=read.csv("dataSets/EconomistData.csv")
+
+
+```
+
+### Create a scatter plot with CPI on the x axis and HDI on the y axis
+```{R}
+ggplot(dat, aes(x = CPI, y = HDI)) + geom_point()
+
+```
+
+### Color the points blue
+```{R}
+ggplot(dat, aes(x = CPI, y = HDI)) + geom_point(color="blue")
+
+```
+
+### Map the color of the points to Region
+
+```{R}
+ggplot(dat, aes(x = CPI, y = HDI)) + geom_point(aes(color=Region))
+
+```
+
+### Make the points bigger by setting size to 2
+
+```{R}
+ggplot(dat, aes(x = CPI, y = HDI)) + geom_point(aes(color=Region),size=2)
+
+```
+
+
+### Map the size of the points to HDI.Rank
+
+```{R}
+ggplot(dat, aes(x = CPI, y = HDI)) + geom_point(aes(color=Region,size=HDI.Rank))
+
+```
+
+#Statistical Transformations
+
+boxplots, histograms and prediction lines etc require statistical transformation
+
+for boxplot, the y value must be transformed to the median and 1.5
+
+```{r}
+args(geom_histogram)
+args(stat_bin)
+
+```
+
+
+##Setting statistical transformation arguments
+
+```{R}
+
+p2=ggplot(housing, aes(x=Home.Value))
+
+p2+geom_histogram()
+
+p2+geom_histogram(stat="bin", binwidth = 4000)
+
+
+```
+
+###changing the statistical transformation 
+```{r}
+housing.sum=aggregate(housing["Home.Value"],by=housing["State"], FUN=mean)
+rbind(head(housing.sum),tail(housing.sum))
+
+
+ggplot(housing.sum, aes(x=State, y=Home.Value))+
+  geom_bar(stat="identity")
+
+
+
+```
+
+##Exercise II
+
+### Re-create a scatter plot with CPI on the x axis and HDI on the y axis (as you did in the previous exercise)
+
+```{R}
+ggplot(dat, aes(x = CPI, y = HDI)) + geom_point()
+
+```
+
+
+### Overaly a smoothing line on top of the scatter plot using geom_smooth
+
+```{R}
+p3=ggplot(dat, aes(x = CPI, y = HDI)) + geom_point()
+
+p3+
+  geom_smooth()
+
+```
+
+
+### Overlay a smoothing line on top of the scatter plot using geom_smooth, but use a linear model for the predictions. Hint: see ?stat_smooth
+
+
+```{R}
+p3=ggplot(dat, aes(x = CPI, y = HDI)) + geom_point()
+
+p3+
+  geom_smooth(method="lm")
+
+```
+
+### Overlay a smoothing line on top of the scatter plot using geom_line, hint: change the statistical transformation.
+
+
+```{R}
+p3=ggplot(dat, aes(x = CPI, y = HDI)) 
+
+
+dat$ps<- predict(lm(HDI ~ CPI, data = dat))
+
+
+p3 + 
+  geom_point() +
+  geom_line(aes(y=dat$ps))
+
+```
+
+### Overlay a smoothing line on top of the scatter plot using the default loess method, but make it less smooth. Hint: see ?loess
+
+```{R}
+p3=ggplot(dat, aes(x = CPI, y = HDI)) + geom_point()
+
+p3+
+  geom_smooth(span=0.2)+
+  geom_smooth(span=1,color="red")
+
+```
+
+#scales
+to control aesthetic mapping
+
+name, limits, breaks, labels
+
+##dotplot example
+
+```{R}
+p4=ggplot(housing,
+          aes(x=State,
+              y=Home.Price.Index))+
+  theme(legend.position="top",
+        axis.text=element_text(size=6))
+
+p5=p4+geom_point(aes(color=Date),
+                 alpha=0.5,  ###alpha is the transparency value
+                 size=1.5,
+                 position=position_jitter(width=0.1,height =0))
+
+
+
+p5+scale_x_discrete(name="State Abbreviation")+
+  scale_color_continuous(name="",
+                         breaks=c(1976,1994,2013),
+                         labels=c("'76","'94","'13"))
+
+
+p5+scale_x_discrete(name="State Abbreviation")+
+  scale_color_continuous(name="",
+                         breaks=c(1976,1994,2013),
+                         labels=c("'76","'94","'13"),
+                         low="blue",high="red")
+
+
+library(reshape2)
+library(scales)
+
+p5+scale_x_discrete(name="State Abbreviation")+
+  scale_color_continuous(name="",
+                         breaks=c(1976,1994,2013),
+                         labels=c("'76","'94","'13"),
+                         low=muted("blue"),high=muted("red"))
+
+
+```
+
+##Exercise III
+
+
+### create a scatter plot with CPI on the x axis and HDI on the y axis, color the points to indicate region 
+
+```{R}
+p6=ggplot(dat, aes(x=CPI,y=HDI))
+
+
+p6+
+  geom_point(aes(color=Region))
+```
+
+### Modify the x,y and color scales so that they have more easily-understood names
+
+```{R}
+p6=ggplot(dat, aes(x=CPI,y=HDI))
+
+
+p6+
+  geom_point(aes(color=Region))+
+  scale_x_discrete(name="Corruption Perception Index")+
+  scale_y_discrete(name="Human Development Index")
+
+```
+
+
+###Modify the color scale to use specific values of your choosing 
+```{R}
+p6=ggplot(dat, aes(x=CPI,y=HDI))
+
+
+p6+
+  geom_point(aes(color=Region))+
+  scale_x_discrete(name="Corruption Perception Index")+
+  scale_y_discrete(name="Human Development Index")+
+  scale_color_manual(values=c("red","blue","green","black","grey","orange"))
+
+```
+
+# Faceting
+
+faceting is ggplot2 parlance for small multiples
+
+the idea is to create seperate graphs for subsets of data
+
+`facet_wrap` and `facet_grid`
+
+facilites comparision among plots, not just geoms within a plot
+
+
+
+```{r}
+p_5=ggplot(housing, aes(x=Date, y=Home.Value))
+
+p_5+geom_line(aes(color=State))
+
+```
+
+two problems here, too many states to distinguish by color and the lines obscure one another
+
+
+```{r}
+p_5=ggplot(housing, aes(x=Date, y=Home.Value))
+
+p_5+geom_line()+facet_wrap(~State,ncol=10)
+
+```
+
+
+# Themes
+
+```{r}
+p_5=ggplot(housing, aes(x=Date, y=Home.Value))+geom_line()+facet_wrap(~State,ncol=10)
+p_5+theme_linedraw()
+
+p_5+theme_light()
+
+```
+
+
+## Overiding theme defaults
+
+```{r}
+p_5=ggplot(housing, aes(x=Date, y=Home.Value))+geom_line()+facet_wrap(~State,ncol=10)
+
+p_5+theme_minimal()+
+  theme(text=element_text(color="turquoise"))
+
+
+```
+
+#wrong and right
+
+```{r}
+housing.byyear=aggregate(cbind(Home.Value, Land.Value)~ Date, data=housing, mean)
+
+ggplot(housing.byyear,
+       aes(x=Date))+
+  geom_line(aes(y=Home.Value), color="red")+
+  geom_line(aes(y=Land.Value), color="blue")
+
+###right version
+
+library(tidyr)
+
+home.land.byyear=gather(housing.byyear, value="value", key="type",
+                        Home.Value, Land.Value)
+
+###add one more variable called type.
+
+ggplot(home.land.byyear, aes(x=Date, y=value,
+                             color=type))+
+  geom_line()
+
+
+
+####a bit of tidyr
+
+library(dplyr)
+
+stocks=data_frame(time=as.Date('2009-01-01')+0:9,
+                  X=rnorm(10,0,1),
+                  Y=rnorm(10,0,2),
+                  Z=rnorm(10,0,4))
+
+
+gather(stocks, stock, price, -time)
+
+
+tid=stocks %>%gather(stock, price, -time)  ###-time meaning get everything other than time
+
+
+#putting it all together
+
+
+
+
+```
+
+```{r}
+###it seems r square should be calculated by myself
+
+library(ggrepel)
+
+model=lm(HDI~poly(CPI,2),  dat)
+
+dat$pred=predict(model, x=dat$CPI)
+sm=summary(model)
+r_s=sm$r.squared
+dat$label=dat$Country
+
+important_countries=c("Italy","France","Greece","Russia","Spain", "Norway","New Zealand","US","China","South Africa","Venezuela","Congo","Rwanda","India","Botswana","Germany","Singapore","Japan","Sudan","Iraq","Brazil","Afghamstan","Myanmar","Bhutan","Britain")
+
+muted_which=which(dat$Country%in%important_countries==F)
+
+dat$label[muted_which]=""
+
+p6=ggplot(dat, aes(x=CPI,y=HDI))
+
+p6+
+  geom_line(aes(y=pred),size=1,color="red")+
+  geom_point(aes(color=Region),size=4,shape=21,stroke=1.5,fill="white")+
+  geom_text_repel(aes(label=label), size = 4,point.padding = unit(0.3,"lines"))+
+  scale_color_manual(values=c("dodgerblue","darkturquoise","seagreen","deepskyblue4","brown1","brown"))+
+  scale_x_continuous(name="Corruption Perception Index",limits = c(1,10),breaks=seq(1:10))+
+  scale_y_continuous(name="Human Development Index",limits=c(0.2,1.0))+
+  theme(legend.position = "top" ,
+        legend.key = element_rect(fill="white"),
+        legend.title = element_blank(),
+        legend.text = element_text(size=12),
+        axis.title = element_text(size=12),
+        axis.text = element_text(size=10),
+        panel.background = element_rect(colour = "white",fill="white"),
+        panel.grid.major.y =element_line(size = 0.1,colour = "grey"),
+        plot.title = element_text(face="bold",size=16, hjust = 0))+
+        guides(colour = guide_legend(nrow = 1))+
+  ggtitle("Corruption and human development")
+
+  
+
+
+
+```
+
+
+
