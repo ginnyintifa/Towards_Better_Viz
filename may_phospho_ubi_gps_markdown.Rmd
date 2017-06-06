@@ -1,0 +1,66 @@
+---
+title: "may_phospho_ubi_GPS"
+author: "GINNY"
+date: "1 June 2017"
+output: html_document
+---
+
+```{r}
+####process Y first
+
+library(data.table)
+gps_y_state=fread("/Users/ginny/Parse_GPS/bin/sp_GPS_may/gps_states_y.tsv")
+
+psp_y_state=fread("/Users/ginny/PTMtopographer_DEC/bin/sp_y_feature/can_sites_states_gps_y.tsv")
+
+tb=table(gps_y_state$V1,psp_y_state$V1)
+
+
+cat("recall: ")
+cat(tb[2,2]/(tb[2,2]+tb[1,2]))
+
+
+cat("\n")
+cat("precision: ")
+cat(tb[2,2]/(tb[2,2]+tb[2,1]))
+
+####for s
+gps_s_state=fread("/Users/ginny/Parse_GPS/bin/sp_GPS_may/gps_states_s.tsv")
+
+psp_s_state=fread("/Users/ginny/PTMtopographer_DEC/bin/sp_s_feature/can_sites_states_gps_s.tsv")
+
+tb=table(gps_s_state$V1,psp_s_state$V1)
+
+
+cat("recall: ")
+cat(tb[2,2]/(tb[2,2]+tb[1,2]))
+
+
+cat("\n")
+cat("precision: ")
+cat(tb[2,2]/(tb[2,2]+tb[2,1]))
+
+
+####for t
+gps_t_state=fread("/Users/ginny/Parse_GPS/bin/sp_GPS_may/gps_states_t.tsv")
+
+psp_t_state=fread("/Users/ginny/PTMtopographer_DEC/bin/sp_t_feature/can_sites_states_gps_t.tsv")
+
+tb=table(gps_t_state$V1,psp_t_state$V1)
+
+
+cat("recall: ")
+cat(tb[2,2]/(tb[2,2]+tb[1,2]))
+
+
+cat("\n")
+cat("precision: ")
+cat(tb[2,2]/(tb[2,2]+tb[2,1]))
+
+
+
+
+
+
+```
+
