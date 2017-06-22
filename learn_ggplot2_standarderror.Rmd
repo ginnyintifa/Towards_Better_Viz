@@ -1,0 +1,256 @@
+---
+title: "learn_ggplot_standerror"
+author: "GINNY"
+date: "6 June 2017"
+output: html_document
+---
+#From standard error
+
+
+
+http://t-redactyl.io/blog/2015/12/creating-plots-in-r-using-ggplot2-part-1-line-plots.html
+
+```{r}
+
+setwd("/Users/ginny/Towards_Better_Viz")
+
+library(ggplot2)
+
+library(ggthemes)
+
+library(extrafont)
+
+charts.data=read.csv("copper-data-for-tutorial.csv")
+
+p1=ggplot()+
+    geom_line(aes(y=export, x=year, colour=product),
+              data=charts.data, stat="identity")
+
+  
+p1
+
+
+###changing variables display
+
+charts.data=as.data.frame(charts.data)
+
+charts.data$product=factor(charts.data$product, levels =c("copper","others"),
+                           labels = c("Copper","Pulp wood, Fruit, Salmon & others"))
+
+p1=ggplot() + geom_line(aes(y=export, x=year, colour= product), size =1.5,
+                        data=charts.data, stat="identity")+
+  theme(legend.position = "bottom",legend.direction = "horizontal",legend.title = element_blank())
+
+
+###adjusting x-axis scale
+
+
+p1=p1+scale_x_continuous(breaks=seq(2006,2014,1))
+
+  
+p1
+
+###adjusting axis label and adding title
+
+p1=p1+ggtitle("Composition of exports to China($)") +labs(x="Year",y="USD million")
+
+p1
+
+
+###ajusting color palette
+
+colour=c("#5F9EA0", "#E1B378")
+
+p1=p1+scale_color_manual(values=colour)
+
+
+p1
+
+
+### using the white theme
+
+p1=p1+theme_bw()
+
+p1
+
+
+######creating an XKCD style chart
+
+library(extrafont)
+
+download.file("http://simonsoftware.se/other/xkcd.ttf",
+              dest="xkcd.ttf", mode="wb")
+system("mkdir ~/.fonts")
+system("cp xkcd.ttf  ~/.fonts")
+fonts()
+loadfonts()
+
+fill=c("#56B4E9", "#ff69b4")
+
+p1 <- ggplot() +
+  geom_line(aes(y = export, x = year, colour = product), size=1.5, data = charts.data,
+            stat="identity") +
+  theme(legend.position="bottom", legend.direction="horizontal",
+        legend.title = element_blank()) +
+  scale_x_continuous(breaks=seq(2006,2014,1)) +
+  labs(x="Year", y="USD million") +
+  ggtitle("Composition of Exports to China ($)") +
+  scale_color_manual(values=fill) +
+  theme(axis.line = element_line(size=1, colour = "black"), panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), panel.border = element_blank(),
+        panel.background = element_blank()) +
+  theme(plot.title=element_text(family="Times"), text=element_text(family="Times"),
+        axis.text.x=element_text(colour="black", size = 10),
+        axis.text.y=element_text(colour="black", size = 10),
+        legend.key=element_rect(fill="white", colour="white"))
+
+
+####Using"The Economist" theme.
+
+library(ggthemes)
+
+p1 <- ggplot() + theme_economist() + scale_colour_economist() +
+  geom_line(aes(y = export, x = year, colour = product), size=1.5, data = charts.data,
+            stat="identity") +
+  theme(legend.position="bottom", legend.direction="horizontal",
+        legend.title = element_blank()) +
+  scale_x_continuous(breaks=seq(2006,2014,1)) +
+  labs(x="Year", y="USD million") +
+  ggtitle("Composition of Exports to China ($)")
+p1
+
+
+
+
+```
+
+#area plots
+
+```{r}
+library(ggplot2)
+library(ggthemes)
+library(extrafont)
+library(plyr)
+
+####not sure if the font can be used
+
+
+charts.data <- read.csv("copper-data-for-tutorial.csv")
+
+p2<-ggplot()+
+  geom_area(aes(y=export,x=year,fill=product),data=charts.data,stat="identity")
+
+p2
+
+###adjusting legend postion
+
+charts.data <- ddply(charts.data, .(year), transform, pos=cumsum(export)-(0.5*export))
+
+
+p2 <-p2+theme(legend.position = "bottom", legend.direction = "horizontal",
+              legend.title=element_blank())
+
+p2
+
+
+
+###changing variables displayed
+
+charts.data<-as.data.frame(charts.data)
+
+charts.data$product<-factor(charts.data$product, levels=c("copper","others"),
+                            labels=c("Copper","Pulp wood, Fruit, Salmon & Others"))
+
+p2 <- ggplot() + 
+  geom_area(aes(y=export, x=year, fill = product),data=charts.data,
+                           stat="identity")+
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.title = element_blank())
+
+p2
+
+
+### adjusting x-axis scale
+
+p2<-p2+
+  scale_x_continuous(breaks=seq(2006,2014,1))
+
+p2
+
+
+### adjusting axis labels and adding title
+
+
+p2 <- p2+
+  ggtitle("Composition of Exports to China ($)")+
+  labs(x="Year",y="USD million")
+p2
+  
+
+### adjusting color palette
+
+
+fill<- c("#5F9EA0", "#E1B378")
+
+p2<-p2+
+  scale_fill_manual(values=fill)
+p2
+
+### using the white theme
+
+fill<- c("#5F9EA0", "#E1B378")
+
+p2<-ggplot()+
+    theme_bw()+
+  geom_area(aes(y=export, x=year,fill=product), data=charts.data, stat="identity")+
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.title = element_blank())+
+  scale_x_continuous(breaks=seq(2006,2014,1))+
+  labs(x="Year",y="USD million")+
+  ggtitle("Composition of Export to China ($)")+
+  scale_fill_manual(values=fill)
+
+p2
+
+####economist
+
+p2 <- ggplot() + theme_economist() + scale_fill_economist() +
+  geom_area(aes(y = export, x = year, fill = product), data = charts.data, stat="identity") +
+  theme(legend.position="bottom", legend.direction="horizontal",
+        legend.title = element_blank()) +
+  scale_x_continuous(breaks=seq(2006,2014,1)) +
+  labs(x="Year", y="USD million") +
+  ggtitle("Composition of Exports to China ($)")
+p2
+
+
+####
+
+setwd("/Users/ginny/Towards_Better_Viz")
+library(ggplot2)
+library(ggthemes)
+library(extrafont)
+library(plyr)
+library(scales) 
+charts.data <- read.csv("copper-data-for-tutorial.csv")
+
+
+p3 <- ggplot()+
+  geom_bar(aes(y=export, x=year, fill=product),
+           data=charts.data,
+           stat='identity')
+
+
+
+p3
+
+
+
+```
+
+
+
+
+
