@@ -3,10 +3,14 @@
 
 ## Current skills:
 
-> 1 R basic graphics with random packages
-> 2 Tableau
-> 3 Adobe Illustrator (for beautifying purpose)
-> 4 Basic ggplot2 
+* R basic graphics with some random packages 
+  * pROC
+  * hexbin
+  * maps
+  * etc.
+* Tableau
+* Adobe Illustrator (for beautifying purpose)
+* Basic ggplot2 
 
 Short term goal:
 

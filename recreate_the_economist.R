@@ -1,0 +1,43 @@
+library(ggplot2)
+library(ggrepel)
+
+setwd("/Users/ginny/Downloads/Rgraphics")
+
+dat=read.csv("dataSets/EconomistData.csv")
+
+
+model=lm(HDI~poly(CPI,2),  dat)
+
+dat$pred=predict(model, x=dat$CPI)
+sm=summary(model)
+r_s=sm$r.squared
+dat$label=dat$Country
+
+important_countries=c("Italy","France","Greece","Russia","Spain", "Norway","New Zealand","US","China","South Africa","Venezuela","Congo","Rwanda","India","Botswana","Germany","Singapore","Japan","Sudan","Iraq","Brazil","Afghamstan","Myanmar","Bhutan","Britain")
+
+muted_which=which(dat$Country%in%important_countries==F)
+
+dat$label[muted_which]=""
+
+p6=ggplot(dat, aes(x=CPI,y=HDI))
+
+p6+
+  geom_line(aes(y=pred),size=1,color="red")+
+  geom_point(aes(color=Region),size=4,shape=21,stroke=1.5,fill="white")+
+  geom_text_repel(aes(label=label), size = 4,point.padding = unit(0.3,"lines"))+
+  scale_color_manual(values=c("dodgerblue","darkturquoise","seagreen","deepskyblue4","brown1","brown"))+
+  scale_x_continuous(name="Corruption Perception Index",limits = c(1,10),breaks=seq(1:10))+
+  scale_y_continuous(name="Human Development Index",limits=c(0.2,1.0))+
+  theme(legend.position = "top" ,
+        legend.key = element_rect(fill="white"),
+        legend.title = element_blank(),
+        legend.text = element_text(size=12),
+        axis.title = element_text(size=12),
+        axis.text = element_text(size=10),
+        panel.background = element_rect(colour = "white",fill="white"),
+        panel.grid.major.y =element_line(size = 0.1,colour = "grey"),
+        plot.title = element_text(face="bold",size=16, hjust = 0))+
+  guides(colour = guide_legend(nrow = 1))+
+  ggtitle("Corruption and human development")
+
+
